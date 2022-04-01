@@ -28,9 +28,10 @@ window.addEventListener("mousemove", (event) => {
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  initObjects();
 });
 
-class Object {
+class Ball {
   constructor(x, y, radius, color) {
     this.x = x;
     this.y = y;
@@ -51,9 +52,23 @@ class Object {
     this.draw();
   }
 }
+// some utils
+const randomColor = () =>
+  colorPallet[Math.round(Math.random() * colorPallet.length)];
+
+const randomIntFromRange = (min, max) =>
+  Math.round(Math.random() * (max - min + 1) + min);
+
+const distance = (x1, x2, y1, y2) => {
+  const xDist = x1 - x2;
+  const yDist = y1 - y2;
+
+  return Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
+};
 
 let objects = new Array();
 const initObjects = () => {
+  let ball = new Ball(20, 20, 30, randomColor());
   objects = [];
   for (let index = 0; index < 400; index++) {
     // Do something
@@ -69,3 +84,4 @@ const animate = () => {
 };
 
 animate();
+initObjects();
