@@ -15,7 +15,10 @@ let canvas = document.querySelector("canvas"),
   mousePos = {
     x: undefined,
     y: undefined,
-  };
+  },
+  gravity = 0.9,
+  friction = 0.99,
+  minCloseness = 50;
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -32,9 +35,11 @@ window.addEventListener("resize", () => {
 });
 
 class Ball {
-  constructor(x, y, radius, color) {
+  constructor(x, y, dx, dy, radius, color) {
     this.x = x;
     this.y = y;
+    this.dy = dy;
+    this.dx = dx;
     this.radius = radius;
     this.color = color;
   }
@@ -42,13 +47,32 @@ class Ball {
   draw() {
     context.beginPath();
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-    context.strokeStyle = `rgb(${this.color})`;
     context.fillStyle = `rgba(${this.color},0.3)`;
     context.fill();
-    context.stroke();
+    context.closePath();
   }
 
   update() {
+    if (this.y + this.radius + this.dy > canvas.height) {
+      this.dy = -this.dy * friction;
+    } else {
+      this.dy += gravity;
+    }
+
+    if (
+      mousePos.x - this.x < minCloseness &&
+      mousePos.x - this.x > -minCloseness &&
+      mousePos.y - this.y < minCloseness &&
+      mousePos.y - this.y > -minCloseness
+    ) {
+      if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
+        this.x -= this.dx;
+      }
+      this.x += this.dx;
+    }
+
+    this.y += this.dy;
+    this.x;
     this.draw();
   }
 }
@@ -66,13 +90,22 @@ const distance = (x1, x2, y1, y2) => {
   return Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
 };
 
-let objects = new Array();
+let ballArray = new Array();
+
 const initObjects = () => {
-  let ball = new Ball(20, 20, 30, randomColor());
-  objects = [];
-  for (let index = 0; index < 400; index++) {
-    // Do something
-    // objects.push()
+  ballArray = [];
+  for (let index = 0; index < 50; index++) {
+    let radius = randomIntFromRange(10, 30);
+    ballArray.push(
+      new Ball(
+        randomIntFromRange(radius, canvas.width - radius),
+        randomIntFromRange(0, canvas.height - radius),
+        randomIntFromRange(-2, 2),
+        5,
+        radius,
+        randomColor()
+      )
+    );
   }
 };
 
@@ -80,7 +113,10 @@ const animate = () => {
   requestAnimationFrame(animate);
 
   context.clearRect(0, 0, innerWidth, innerHeight);
-  context.fillText("HTML CANVAS INITIALIZED CORRECTLY", mousePos.x, mousePos.y);
+
+  for (let index = 0; index < ballArray.length; index++) {
+    ballArray[index].update();
+  }
 };
 
 animate();
